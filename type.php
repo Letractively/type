@@ -38,8 +38,8 @@ class Typography {
   // automatically process the text
   public function process($text) {
     $text = $this->add_ligatures($text);
-    $text = $this->kern($text);
     $text = $this->magicquote($text);
+    $text = $this->kern($text);
     return $text;
   }
   
@@ -54,14 +54,12 @@ class Typography {
   }
   
   // add in the <span> kerning
-  public function kern($text) {
-    // FIXME
+	public function kern($text) {
     $kerns = array();
-    foreach ($this->kern_pairs as $pair) {
-      $chars = str_split($pair);
-      array_push($kerns, "<span style=\"letter-spacing: -0.1em\">".$chars[0]."</span>".$chars[1]);
+		foreach ($this->kern_pairs as $pair){
+      $kerns[$pair] = "<span style=\"letter-spacing: -0.1em\">" . $pair[0] . "</span>" . $pair[1];
     }
-    return str_replace($kern_pairs, $kerns, $text);
-  }
+    return str_replace(array_keys($kerns), array_values($kerns), $text);
+	}
 }
 ?>
