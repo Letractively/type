@@ -50,7 +50,43 @@ class Typography {
   
   // add in all the magic quotes
   public function magicquote($text) {
-    return preg_replace($this->quote_match, $this->quotes, $text);
+    $html_open = false;
+    $double_quote_open = false;
+    $single_quote_open = false;
+    $org_text = $text;
+    for($offset=0,$i=0;$i<strlen($org_text);$offset++,$i++) {
+      switch($org_text[$i]) {
+        case "<": $html_open = true;  break;
+        case ">": $html_open = false; break;
+        case '"':
+          if($html_open == false) {
+            if($double_quote_open == true) {
+              $double_quote_open = false;
+              $text = substr($text, 0, $offset-1) . "&#8221;" . substr($text, $offset);
+              $offset += 6;
+            } else {
+              $double_quote_open = true;
+              $text = substr($text, 0, $offset) . "&#8220;" . substr($text, $offset+1);
+              $offset += 6;
+            }
+          }
+          break;
+        case "'":
+          if($html_open == false) {
+            if($single_quote_open == true) {
+              $single_quote_open = false;
+              $text = substr($text, 0, $offset-1) . "&#8217;" . substr($text, $offset);
+              $offset += 6;
+            } else {
+              $single_quote_open = true;
+              $text = substr($text, 0, $offset) . "&#8216;" . substr($text, $offset+1);
+              $offset += 6;
+            }
+          }
+          break;
+        }
+      }
+    return $text;
   }
   
   // add in the <span> kerning
