@@ -17,14 +17,24 @@
 
 class Typography {
   // a simple approach to kerning: just kern these pairs of letters.
-  // TODO: get a typography expert to review these
-  public $kern_pairs = array("Wa", "To", "LA", "P.", "Tr", "Ta", "Tu", "Ty", "WA", "We", "Wo", "Ya", "Yo");
+  public $kern_pairs = array("Fa", "Fc", "Fe", "Fg", "Fm", "Fn", "Fo", "Fp", "Fq", "Fr", "Fs", "Fu", "Fv", "Fw", "Fx", "Fy", "Fz", "F.", "F,",
+                             "Ku", "Kv", "Kw", "Ky",
+                             "Pa", "Pc", "Pe", "Pg", "Pm", "Pn", "Po", "Pp", "Pq", "Pr", "Ps", "Pu", "F.", "F,",
+                             "Ta", "Tc", "Te", "Tg", "Tm", "Tn", "To", "Tp", "Tq", "Tr", "Ts", "Tu", "Tv", "Tw", "Tx", "Ty", "Tz", "T.", "T,",
+                             "Va", "Vc", "Ve", "Vg", "Vm", "Vn", "Vo", "Vp", "Vq", "Vr", "Vs", "Vu", "Vv", "Vw", "Vx", "Vy", "Vz", "V.", "V,",
+                             "Wa", "Wc", "We", "Wg", "Wm", "Wn", "Wo", "Wp", "Wq", "Wr", "Ws", "Wu", "Wv", "Ww", "Wx", "Wy", "Wz", "W.", "W,",
+                             "Ya", "Yc", "Ye", "Yg", "Ym", "Yn", "Yo", "Yp", "Yq", "Yr", "Ys", "Yu", "Yv", "Yw", "Yx", "Yy", "Yz", "Y.", "Y,",
+                             "WA", "AW", "VA", "AV"
+                             );
   // ligatures we want replacing.
   public $ligature_pairs = array("ffi", "ffl", "fi", "ff", "fl");
   public $ligatures = array("&#xfb03;", "&#xfb04;", "&#xfb01;", "&#xfb00;", "&#xfb02;");
   // magic quote regexps &c.
   public $quote_match = array('/"(.*)"/U', "/'(.*)'/U");
   public $quotes = array('&#8220;$1&#8221;', '&#8216;$1&#8217;');
+  
+  // internal variable to help with magic quotes.
+  public $html_tag_replacements = array();
   
   // autoprocess options
   protected $kern;
@@ -50,52 +60,54 @@ class Typography {
   
   // add in all the magic quotes
   public function magicquote($text) {
+    // it's MUCH easier to do it with arrays and implode() than strings and substr()
+    $charlist = str_split($text);
     $html_open = false;
-    $double_quote_open = false;
-    $single_quote_open = false;
-    $org_text = $text;
-    for($offset=0,$i=0;$i<strlen($org_text);$offset++,$i++) {
-      switch($org_text[$i]) {
-        case "<": $html_open = true;  break;
-        case ">": $html_open = false; break;
-        case '"':
-          if($html_open == false) {
-            if($double_quote_open == true) {
-              $double_quote_open = false;
-              $text = substr($text, 0, $offset-1) . "&#8221;" . substr($text, $offset);
-              $offset += 6;
+    $squote_open = false;
+    $dquote_open = false;
+    // for? are you kidding, pc? foreach is the PHP loop-through construct :-)
+    foreach ($charlist as &$char) { // notice the ampersand
+      switch ($char) {
+        case "<" :
+          $html_open = true;
+        break;
+        case ">" :
+          $html_open = false;
+        break;
+        case '"' :
+          if (!$html_open) {
+            if (!$dquote_open) {
+              $char = "&#8220;";
+              $dquote_open = true;
             } else {
-              $double_quote_open = true;
-              $text = substr($text, 0, $offset) . "&#8220;" . substr($text, $offset+1);
-              $offset += 6;
+              $char = "&#8221;";
+              $dquote_open = false;
             }
           }
-          break;
-        case "'":
-          if($html_open == false) {
-            if($single_quote_open == true) {
-              $single_quote_open = false;
-              $text = substr($text, 0, $offset-1) . "&#8217;" . substr($text, $offset);
-              $offset += 6;
+        break;
+        case "'" :
+          if (!$html_open) {
+            if (!$squote_open) {
+              $char = "&#8216;";
+              $squote_open = true;
             } else {
-              $single_quote_open = true;
-              $text = substr($text, 0, $offset) . "&#8216;" . substr($text, $offset+1);
-              $offset += 6;
+              $char = "&#8217;";
+              $squote_open = false;
             }
           }
-          break;
-        }
+        break;
       }
-    return $text;
+    }
+    return implode($charlist);
   }
   
   // add in the <span> kerning
-	public function kern($text) {
+  public function kern($text) {
     $kerns = array();
-		foreach ($this->kern_pairs as $pair){
+    foreach ($this->kern_pairs as $pair){
       $kerns[$pair] = "<span style=\"letter-spacing: -0.1em\">" . $pair[0] . "</span>" . $pair[1];
     }
     return str_replace(array_keys($kerns), array_values($kerns), $text);
-	}
+  }
 }
 ?>
