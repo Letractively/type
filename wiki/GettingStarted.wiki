@@ -1,0 +1,12 @@
+#summary Getting set up and running.
+#labels Featured
+
+  # copy "type.php" into a folder near the files you want to reference it from.
+  # add the following snippet of code to the top of each of your documents which renders HTML:
+
+{{{
+<?php require_once("type.php");
+$typ = new Typography; ?>
+}}}
+
+  # call $typ->process($text); on each of the strings you would like processed, where $text is that string.
