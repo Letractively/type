@@ -6,7 +6,7 @@
 
 {{{
 <?php require_once("type.php");
-$typ = new Typography; ?>
+$type = new Typography; ?>
 }}}
 
-  # call $typ->process($text); on each of the strings you would like processed, where $text is that string.
+  # call $type->process($text); on each of the strings you would like processed, where $text is that string.
