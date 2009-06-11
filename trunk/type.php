@@ -38,8 +38,8 @@ class Typography {
                              "WA", "AW", "VA", "AV"
                              );
   // ligatures we want replacing.
-  public $ligature_pairs = array("ffi", "ffl", "fi", "ff", "fl");
-  public $ligatures = array("&#xfb03;", "&#xfb04;", "&#xfb01;", "&#xfb00;", "&#xfb02;");
+  public $ligature_pairs = array("ffi", "ffl", "fi", "ff", "fl", "...");
+  public $ligatures = array("&#xfb03;", "&#xfb04;", "&#xfb01;", "&#xfb00;", "&#xfb02;", "&hellip;");
   // magic quote regexps &c.
   public $quote_match = array('/"(.*)"/U', "/'(.*)'/U");
   public $quotes = array('&#8220;$1&#8221;', '&#8216;$1&#8217;');
