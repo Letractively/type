@@ -15,6 +15,17 @@
  * These rights, on this notice, rely.
  **/
 
+/**
+ * NOTE TO OTHER DEVS
+ **
+ * The code on line '103' revision 'r9'
+ * needs expansion to support words like
+ * 'erbal etc. These tend to be slag, but
+ * need supporting.
+ **
+ * - R4000
+ **/
+ 
 class Typography {
   // a simple approach to kerning: just kern these pairs of letters.
   public $kern_pairs = array("Fa", "Fc", "Fe", "Fg", "Fm", "Fn", "Fo", "Fp", "Fq", "Fr", "Fs", "Fu", "Fv", "Fw", "Fx", "Fy", "Fz", "F.", "F,",
@@ -66,7 +77,7 @@ class Typography {
     $squote_open = false;
     $dquote_open = false;
     // for? are you kidding, pc? foreach is the PHP loop-through construct :-)
-    foreach ($charlist as &$char) { // notice the ampersand
+    foreach ($charlist as $i=>&$char) { // notice the ampersand. $i is used to find previous letter.
       switch ($char) {
         case "<" :
           $html_open = true;
@@ -89,7 +100,7 @@ class Typography {
           if (!$html_open) {
             if (!$squote_open) {
               $char = "&#8216;";
-              $squote_open = true;
+              if($charlist[$i-1] != " ") $squote_open = true; // If the char before ' isn't a space then don't open.
             } else {
               $char = "&#8217;";
               $squote_open = false;
