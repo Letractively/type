@@ -44,6 +44,10 @@ class Typography {
   public $quote_match = array('/"(.*)"/U', "/'(.*)'/U");
   public $quotes = array('&#8220;$1&#8221;', '&#8216;$1&#8217;');
   
+  // numbers - experimental
+  public $numbers_match = array('/([0-9]+)(st|nd|rd|th)/', '/No\. ([0-9]+)/');
+  public $num_render = array('$1<sup>$2</sup>', '&#8470; $1');
+  
   // internal variable to help with magic quotes.
   public $html_tag_replacements = array();
   
@@ -99,8 +103,10 @@ class Typography {
         case "'" :
           if (!$html_open) {
             if (!$squote_open) {
-              $char = "&#8216;";
-              if($charlist[$i-1] == " ") $squote_open = true; // If the char before ' isn't a space then don't open.
+              if($charlist[$i-1] == " ") {
+                $char = "&#8216;";
+                $squote_open = true;
+              }
             } else {
               $char = "&#8217;";
               $squote_open = false;
@@ -119,6 +125,11 @@ class Typography {
       $kerns[$pair] = "<span style=\"letter-spacing: -0.1em\">" . $pair[0] . "</span>" . $pair[1];
     }
     return str_replace(array_keys($kerns), array_values($kerns), $text);
+  }
+  
+  // numbers - EXPERIMENTAL
+  public function numbers($text) {
+    return preg_replace($this->numbers_match, $this->num_render, $text);
   }
 }
 ?>
