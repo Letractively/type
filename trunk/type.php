@@ -100,7 +100,7 @@ class Typography {
           if (!$html_open) {
             if (!$squote_open) {
               $char = "&#8216;";
-              if($charlist[$i-1] != " ") $squote_open = true; // If the char before ' isn't a space then don't open.
+              if($charlist[$i-1] == " ") $squote_open = true; // If the char before ' isn't a space then don't open.
             } else {
               $char = "&#8217;";
               $squote_open = false;
