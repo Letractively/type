@@ -2,17 +2,16 @@
 /**
  * Advanced Web Typography
  * 
- * This is the main class file for the AWTypography
- * library.
+ * This is the main class file for the Advanced Web Typography library.
  * @author David Kendal <thinglie@gmail.com>, Peter Corcoran <drewmoo@gmail.com>
  * @version 1.0
- * @package com.awt.beta
+ * @package advanced.web.typography.beta
  */
 
 /**
  * This is the main typography class.
- * @package com.awt.beta
- * @subpackage com.awt.beta.classes
+ * @package advanced.web.typography.beta
+ * @subpackage advanced.web.typography.beta.classes
  */
 class Typography
 {
@@ -21,14 +20,14 @@ class Typography
      * @access public
      * @var array
      */
-	public $ligature_pairs = array("ffi" => "&#xfb03;", "ffl" => "&#xfb04;", "fi" => "&#xfb01;", "ff" => "&#xfb00;", "fl" => "&#xfb02;", "..." => "&hellip;");
+	public $ligature_pairs = array();
 	
     /**
      * Regular Expressions for matching numbers.
      * @access public
      * @var array
      */
-	public $numbers_match = array('/([0-9]+)(st|nd|rd|th)/' => '$1<sup>$2</sup>', '/No\. ([0-9]+)/' => '&#8470; $1');
+	public $numbers_match = array();
 
     /**
      * Kern these pairs of letters, a simple approach.
@@ -36,11 +35,22 @@ class Typography
      * @var array
      */
 	public $kern_pairs = array();
+
+    /**
+     * This variable contains the options for processing.
+     * @access private
+     * @var array
+     */
+	private $options = array();
 	
     /**
-     * Constructor sets up {@link $kern_pairs}
+     * Constructor sets up {@link $kern_pairs} {@link $ligature_pairs} {@link $numbers_match}
+     * @param string $ligatures Process Ligatures?
+     * @param string $magicquote Process Magic Quotes?
+     * @param string $kern Process Kerns?
+     * @param string $numbers Process Numbers?
      */
-	public function __construct()
+	public function __construct($ligatures = true, $magicquote = true, $kern = true, $numbers = true)
 	{
 		$this->kern_pairs = array(	"Fa", "Fc", "Fe", "Fg", "Fm", "Fn", "Fo", "Fp", "Fq", "Fr", "Fs", "Fu", "Fv", "Fw", "Fx", "Fy", "Fz", "F.", "F,",
 									"Ku", "Kv", "Kw", "Ky", "Pa", "Pc", "Pe", "Pg", "Pm", "Pn", "Po", "Pp", "Pq", "Pr", "Ps", "Pu", "F.", "F,", "AV",
@@ -49,6 +59,13 @@ class Typography
 									"Wa", "Wc", "We", "Wg", "Wm", "Wn", "Wo", "Wp", "Wq", "Wr", "Ws", "Wu", "Wv", "Ww", "Wx", "Wy", "Wz", "W.", "W,",
 									"Ya", "Yc", "Ye", "Yg", "Ym", "Yn", "Yo", "Yp", "Yq", "Yr", "Ys", "Yu", "Yv", "Yw", "Yx", "Yy", "Yz", "Y.", "Y,",
 									"WA", "AW", "VA");
+									
+		$this->ligature_pairs = array(	"ffi" => "&#xfb03;", "ffl" => "&#xfb04;", "fi" => "&#xfb01;", "ff" => "&#xfb00;",
+										"fl" => "&#xfb02;",  "..." => "&hellip;");
+										
+		$this->numbers_match = array('/([0-9]+)(st|nd|rd|th)/' => '$1<sup>$2</sup>', '/No\. ([0-9]+)/' => '&#8470; $1');
+		
+		$this->options = array("ligatures" => $ligatures, "magicquote" => $magicquote, "kern" => $kern, "numbers" => $numbers);
 	}
 
     /**
@@ -57,10 +74,10 @@ class Typography
      * @return string processed text
      */
 	public function process($text) {
-		$text = $this->add_ligatures($text);
-		$text = $this->magicquote($text);
-		$text = $this->kern($text);
-		$text = $this->numbers($text);
+		if($this->options["ligatures"])  $text = $this->add_ligatures($text);
+		if($this->options["magicquote"]) $text = $this->magicquote($text);
+		if($this->options["kern"])       $text = $this->kern($text);
+		if($this->options["numbers"])    $text = $this->numbers($text);
 		return $text;
 	}
 
