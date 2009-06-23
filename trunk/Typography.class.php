@@ -22,6 +22,7 @@
 /** developer's notes
  *   - apostrophes not correctly handled for words like 'cello. -pc
  *   - numbers support currently experimental and should NOT yet be integrated into process() -dpk
+ *       - Maybe it should now as we have yet to figure out any enhancements to it, and it seems stable -pc
  **/
 
 class Typography
@@ -40,6 +41,13 @@ class Typography
      * Kern these pairs of letters, a simple approach.
      **/
     public $kern_pairs = array();
+
+	/**
+	 * Magic quote pairs
+	 **/
+	public $magicquote_pairs = array(	"<\"\">" => array("&#8221;", "&#8220"),
+										"<''>" => array("&#8217;", "&#8216;"),
+										);
 
     /**
      * This variable contains the options for processing.
@@ -101,41 +109,67 @@ class Typography
     public function numbers($text) {
         return preg_replace(array_keys($this->numbers_match), array_values($this->numbers_match), $text);
     }
+	
     /**
      * Handles quotes in given text ($text)
      **/
     public function magicquote($text) {
-        $charlist = str_split($text);
-        $dquote_open = "&#8221;";
-        $squote_open = "&#8217;";
-        $html_open = false;
-        for($i=0;$i<count($charlist);$i++) {
-            $char = &$charlist[$i];
-            switch ($char) {
-                case "<" :
-                    $html_open = true;
-                    break;
-                case ">" :
-                    $html_open = false;
-                    break;
-                case "\"" :
-                    if (!$html_open) {
-                        if($dquote_open == "&#8220;")
-                            $dquote_open = $char = "&#8221;";
-                        elseif($dquote_open == "&#8221;")
-                            $dquote_open = $char = "&#8220;";
-                    }
-                    break;
-                case "'" :
-                    if (!$html_open) {
-                        if($squote_open == "&#8217;" || $charlist[$i-1] == " ")
-                            $squote_open = $char = "&#8216;";
-                        elseif($squote_open == "&#8216;")
-                            $squote_open = $char = "&#8217;";
-                        break;
-                    }
-            }
-        }
+		$charlist = str_split($text);
+		$inneropen = array();
+		$outeropen = array();
+		for($i = 0; $i < count($charlist); $i++) { // These a speed up here with a line increase :) -pc
+			$char = &$charlist[$i];
+			foreach($this->magicquote_pairs as $find => $replace) {
+				switch(strlen($find)) {
+					case 4: // Has outer1, inner1, inner2 and outer2 tag.
+						list($outer1, $inner1, $inner2, $outer2) = str_split($find);
+						if($char == $inner1 || $char == $inner2) {
+							if($inneropen[$inner1] == false || $outeropen[$outer1] != true && $charlist[$i-1] == " ") {
+								$char = $replace[0];
+								$inneropen[$inner1] = true;
+							} else if($inneropen[$inner1] == true || $outeropen[$outer1] != true) {
+								$char = $replace[1];
+								$inneropen[$inner1] = false;
+							}
+						}
+						if($char == $outer1 || $char == $outer2) $outeropen[$outer1] == !$outeropen[$outer1]; // Switch it on/off.
+						break;
+					case 3: // Has outer1, inner1 and outer2 tag.
+						list($outer1, $inner1, $inner2) = str_split($find);
+						if($char == $inner1 || $char == $inner2) {
+							if($inneropen[$inner1] == false || $outeropen[$outer1] != true && $charlist[$i-1] == " ") {
+								$char = $replace[0];
+								$inneropen[$inner1] = true;
+							} else if($inneropen[$inner1] == true || $outeropen[$outer1] != true) {
+								$char = $replace[1];
+								$inneropen[$inner1] = false;
+							}
+						}
+						if($char == $outer1) $outeropen[$outer1] == !$outeropen[$outer1]; // Switch it on/off.
+						break;
+					case 2: // Has inner1 and inner2 tag.
+						// This can work like so because it is only a simple
+						// two char search, therefore its just on or off :).
+						list($inner1, $inner2) = str_split($find);
+						if($char == $inner1 || $char == $inner2) {
+							if($inneropen[$inner1] == false && $charlist[$i-1] == " ") {
+								$char = $replace[0];
+								$inneropen[$inner1] = true;
+							} else if($inneropen[$inner1] == true) {
+								$char = $replace[1];
+								$inneropen[$inner1] = false;
+							}
+						}
+						break;
+					case 1: // Has inner1 tag.
+						// Yay for cloning str_replace :(.
+						// If the user only supplys one 'magicquote' char.
+						// This will essentialy str_replace it.
+						if($char == $find[0]) $char = $replace[0];
+						break;
+				}
+			}
+		}
         return implode($charlist);
     }
 }
