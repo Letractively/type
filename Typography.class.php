@@ -45,8 +45,8 @@ class Typography
 	/**
 	 * Magic quote pairs
 	 **/
-	public $magicquote_pairs = array(	"<\"\">" => array("&#8221;", "&#8220"),
-										"<''>" => array("&#8217;", "&#8216;"),
+	public $magicquote_pairs = array(	"<\"\">" => array("&#8220;", "&#8221;"),
+										"<''>" => array("&#8216;", "&#8217;"),
 										);
 
     /**
@@ -80,9 +80,9 @@ class Typography
      **/
     public function process($text) {
         if($this->options["ligatures"])  $text = $this->add_ligatures($text);
-        if($this->options["magicquote"]) $text = $this->magicquote($text);
         if($this->options["kern"])       $text = $this->kern($text);
         //if($this->options["numbers"])    $text = $this->numbers($text); //EXPERIMENTAL
+        if($this->options["magicquote"]) $text = $this->magicquote($text);
         return $text;
     }
 
@@ -124,28 +124,29 @@ class Typography
 					case 4: // Has outer1, inner1, inner2 and outer2 tag.
 						list($outer1, $inner1, $inner2, $outer2) = str_split($find);
 						if($char == $inner1 || $char == $inner2) {
-							if($inneropen[$inner1] == false || $outeropen[$outer1] != true && $charlist[$i-1] == " ") {
+							if($inneropen[$inner1] == false && $outeropen[$outer1] != true && $charlist[$i-1] == " ") {
 								$char = $replace[0];
 								$inneropen[$inner1] = true;
-							} else if($inneropen[$inner1] == true || $outeropen[$outer1] != true) {
+							} else if($inneropen[$inner1] == true && $outeropen[$outer1] != true) {
 								$char = $replace[1];
 								$inneropen[$inner1] = false;
 							}
 						}
-						if($char == $outer1 || $char == $outer2) $outeropen[$outer1] == !$outeropen[$outer1]; // Switch it on/off.
+						if($char == $outer1 && $outeropen[$outer1] == false) $outeropen[$outer1] = true;
+						if($char == $outer2 && $outeropen[$outer1] == true) $outeropen[$outer1] = false;
 						break;
 					case 3: // Has outer1, inner1 and outer2 tag.
 						list($outer1, $inner1, $inner2) = str_split($find);
 						if($char == $inner1 || $char == $inner2) {
-							if($inneropen[$inner1] == false || $outeropen[$outer1] != true && $charlist[$i-1] == " ") {
+							if($inneropen[$inner1] == false && $outeropen[$outer1] != true && $charlist[$i-1] == " ") {
 								$char = $replace[0];
 								$inneropen[$inner1] = true;
-							} else if($inneropen[$inner1] == true || $outeropen[$outer1] != true) {
+							} else if($inneropen[$inner1] == true && $outeropen[$outer1] != true) {
 								$char = $replace[1];
 								$inneropen[$inner1] = false;
 							}
 						}
-						if($char == $outer1) $outeropen[$outer1] == !$outeropen[$outer1]; // Switch it on/off.
+						if($char == $outer1) $outeropen[$outer1] = !$outeropen[$outer1]; // Switch it on/off.
 						break;
 					case 2: // Has inner1 and inner2 tag.
 						// This can work like so because it is only a simple
