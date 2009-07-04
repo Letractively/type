@@ -23,6 +23,7 @@
  *   - apostrophes not correctly handled for words like 'cello. -pc
  *   - numbers support currently experimental and should NOT yet be integrated into process() -dpk
  *       - Maybe it should now as we have yet to figure out any enhancements to it, and it seems stable -pc
+ *       - Now no longer experimental for next Numbers release, but needs html tag support :) - pc & dpk
  **/
 
 class Typography
@@ -41,6 +42,13 @@ class Typography
      * Kern these pairs of letters, a simple approach.
      **/
     public $kern_pairs = array();
+	
+	/**
+	 * Should we replace inside HTML entity tags <>.
+	 * False: does not replace.
+	 * True: will replace inside the tags.
+	 **/
+	public $replace_in_html = false;
 
 	/**
 	 * Magic quote pairs
@@ -81,7 +89,7 @@ class Typography
     public function process($text) {
         if($this->options["ligatures"])  $text = $this->add_ligatures($text);
         if($this->options["kern"])       $text = $this->kern($text);
-        //if($this->options["numbers"])    $text = $this->numbers($text); //EXPERIMENTAL
+        if($this->options["numbers"])    $text = $this->numbers($text);
         if($this->options["magicquote"]) $text = $this->magicquote($text);
         return $text;
     }
@@ -100,7 +108,21 @@ class Typography
         $kerns = array();
         foreach ($this->kern_pairs as $pair)
             $kerns[$pair] = "<span style=\"letter-spacing: -0.1em\">" . $pair[0] . "</span>" . $pair[1];
-        return str_replace(array_keys($kerns), array_values($kerns), $text);
+		
+		if($this->replace_in_html == false) {
+			$html_tag_open = false;
+			$charlist = str_split($text);
+			for($i = 0; $i < count($charlist); $i++) {				
+				if($charlist[$i] == "<" || $charlist[$i] == ">") $html_tag_open = !$html_tag_open;
+				
+				foreach($kerns as $pair=>$replace)
+					if($charlist[$i-1] . $charlist[$i] == $pair && $html_tag_open == false)
+						$charlist[$i] = $replace . ($charlist[$i-1] = "");
+			}
+			return implode($charlist);
+		} else {
+			return str_replace(array_keys($kerns), array_values($kerns), $text);
+		}
     }
     
     /**
